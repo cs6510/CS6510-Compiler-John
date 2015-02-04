@@ -90,6 +90,7 @@ public class TopToolbar extends Composite {
   private static final String WIDGET_NAME_WIRELESS_BUTTON = "Wireless";
   private static final String WIDGET_NAME_EMULATOR_BUTTON = "Emulator";
   private static final String WIDGET_NAME_USB_BUTTON = "Usb";
+  private static final String WIDGET_NAME_LIVEEDIT_BUTTON = "LiveEdit";
   private static final String WIDGET_NAME_RESET_BUTTON = "Reset";
   private static final String WIDGET_NAME_HARDRESET_BUTTON = "HardReset";
   private static final String WIDGET_NAME_PROJECT = "Project";
@@ -171,6 +172,8 @@ public class TopToolbar extends Composite {
         MESSAGES.emulatorMenuItem(), new EmulatorAction()));
     connectItems.add(new DropDownItem(WIDGET_NAME_USB_BUTTON, MESSAGES.usbMenuItem(),
         new UsbAction()));
+	 connectItems.add(new DropDownItem(WIDGET_NAME_LIVEEDIT_BUTTON, MESSAGES.liveEditMenuItem(),
+	     new LiveEditAction()));
     connectItems.add(null);
     connectItems.add(new DropDownItem(WIDGET_NAME_RESET_BUTTON, MESSAGES.resetConnectionsMenuItem(),
         new ResetAction()));
@@ -310,7 +313,7 @@ public class TopToolbar extends Composite {
     @Override
     public void execute() {
       if (Ode.getInstance().okToConnect()) {
-        startRepl(true, false, false); // false means we are
+        startRepl(true, false, false, false); // false means we are
                                        // *not* the emulator
       }
     }
@@ -320,7 +323,7 @@ public class TopToolbar extends Composite {
     @Override
     public void execute() {
       if (Ode.getInstance().okToConnect()) {
-        startRepl(true, true, false); // true means we are the
+        startRepl(true, true, false, false); // true means we are the
                                       // emulator
       }
     }
@@ -330,7 +333,16 @@ public class TopToolbar extends Composite {
     @Override
     public void execute() {
       if (Ode.getInstance().okToConnect()) {
-        startRepl(true, false, true);
+        startRepl(true, false, true, false);
+      }
+    }
+  }
+  
+  private class LiveEditAction implements Command {
+    @Override
+    public void execute() {
+      if (Ode.getInstance().okToConnect()) {
+        startRepl(true, false, true, false);
       }
     }
   }
@@ -339,7 +351,7 @@ public class TopToolbar extends Composite {
     @Override
     public void execute() {
       if (Ode.getInstance().okToConnect()) {
-        startRepl(false, false, false); // We are really stopping the repl here
+        startRepl(false, false, false, false); // We are really stopping the repl here
       }
     }
   }
@@ -756,15 +768,18 @@ public class TopToolbar extends Composite {
     }
   }
 
-  private void updateConnectToDropDownButton(boolean isEmulatorRunning, boolean isCompanionRunning, boolean isUsbRunning){
-    if (!isEmulatorRunning && !isCompanionRunning && !isUsbRunning) {
+  private void updateConnectToDropDownButton(boolean isEmulatorRunning, boolean isCompanionRunning, boolean isUsbRunning,
+    boolean isLiveEditRunning){
+    if (!isEmulatorRunning && !isCompanionRunning && !isUsbRunning && !isLiveEditRunning) {
       connectDropDown.setItemEnabled(MESSAGES.AICompanionMenuItem(), true);
       connectDropDown.setItemEnabled(MESSAGES.emulatorMenuItem(), true);
       connectDropDown.setItemEnabled(MESSAGES.usbMenuItem(), true);
+		connectDropDown.setItemEnabled(MESSAGES.liveEditMenuItem(), true);
     } else {
       connectDropDown.setItemEnabled(MESSAGES.AICompanionMenuItem(), false);
       connectDropDown.setItemEnabled(MESSAGES.emulatorMenuItem(), false);
       connectDropDown.setItemEnabled(MESSAGES.usbMenuItem(), false);
+		connectDropDown.setItemEnabled(MESSAGES.liveEditMenuItem(), false);
     }
   }
 
@@ -774,7 +789,7 @@ public class TopToolbar extends Composite {
    */
   public static void indicateDisconnect() {
     TopToolbar instance = Ode.getInstance().getTopToolbar();
-    instance.updateConnectToDropDownButton(false, false, false);
+    instance.updateConnectToDropDownButton(false, false, false,false);
   }
 
   /**
@@ -788,7 +803,7 @@ public class TopToolbar extends Composite {
    * via Wireless.
    */
 
-  private void startRepl(boolean start, boolean forEmulator, boolean forUsb) {
+  private void startRepl(boolean start, boolean forEmulator, boolean forUsb, boolean forCompanion) {
     DesignToolbar.DesignProject currentProject = Ode.getInstance().getDesignToolbar().getCurrentProject();
     if (currentProject == null) {
       OdeLog.wlog("DesignToolbar.currentProject is null. "
@@ -799,14 +814,16 @@ public class TopToolbar extends Composite {
     screen.blocksEditor.startRepl(!start, forEmulator, forUsb);
     if (start) {
       if (forEmulator) {        // We are starting the emulator...
-        updateConnectToDropDownButton(true, false, false);
+        updateConnectToDropDownButton(true, false, false, false);
       } else if (forUsb) {      // We are starting the usb connection
-        updateConnectToDropDownButton(false, false, true);
-      } else {                  // We are connecting via wifi to a Companion
-        updateConnectToDropDownButton(false, true, false);
-      }
+        updateConnectToDropDownButton(false, false, true, false);
+      } else if (forCompanion) {                  // We are connecting via wifi to a Companion
+        updateConnectToDropDownButton(false, true, false, false);
+      } else { //We are starting live edit
+		  updateConnectToDropDownButton(false, false, false, true);
+		} 
     } else {
-      updateConnectToDropDownButton(false, false, false);
+      updateConnectToDropDownButton(false, false, false, false);
     }
   }
 
@@ -819,7 +836,7 @@ public class TopToolbar extends Composite {
     }
     DesignToolbar.Screen screen = currentProject.screens.get(currentProject.currentScreen);
     ((YaBlocksEditor)screen.blocksEditor).hardReset();
-    updateConnectToDropDownButton(false, false, false);
+    updateConnectToDropDownButton(false, false, false, false);
   }
 
   /**

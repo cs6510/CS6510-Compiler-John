@@ -20,14 +20,7 @@ public class TranslationComponentProperty {
   }
 
   public static String getName(String key) {
-    String value = myMap.get(key);
-    if (key == null) {
-      // This will help implementors debug if the forget to add an entry
-      // when defining a new property
-      return "**Missing key in TranslationComponentProperty**";
-    } else {
-      return value;
-    }
+    return myMap.get(key);
   }
 
   /**
@@ -163,7 +156,6 @@ public class TranslationComponentProperty {
     map.put("ResultName", MESSAGES.ResultNameProperties());
     map.put("Rotates", MESSAGES.RotatesProperties());
     map.put("SaveResponse", MESSAGES.SaveResponseProperties());
-    map.put("SavedRecording", MESSAGES.SavedRecordingProperties());
     map.put("ScalePictureToFit", MESSAGES.ScalePictureToFitProperties());
     map.put("ScreenOrientation", MESSAGES.ScreenOrientationProperties());
     map.put("Scrollable", MESSAGES.ScrollableProperties());
