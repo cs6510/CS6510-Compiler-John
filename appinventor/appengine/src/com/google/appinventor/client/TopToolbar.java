@@ -83,6 +83,7 @@ public class TopToolbar extends Composite {
   private static final String WIDGET_NAME_CHECKPOINT = "Checkpoint";
   private static final String WIDGET_NAME_MY_PROJECTS = "MyProjects";
   private static final String WIDGET_NAME_BUILD = "Build";
+  private static final String WIDGET_NAME_BUILD_HTML_OUTPUT = "HTMLOutput";
   private static final String WIDGET_NAME_BUILD_BARCODE = "Barcode";
   private static final String WIDGET_NAME_BUILD_DOWNLOAD = "Download";
   private static final String WIDGET_NAME_BUILD_YAIL = "Yail";
@@ -181,6 +182,8 @@ public class TopToolbar extends Composite {
         new HardResetAction()));
 
     // Build -> {Show Barcode; Download to Computer; Generate YAIL only when logged in as an admin}
+	 buildItems.add(new DropDownItem(WIDGET_NAME_BUILD_HTML_OUTPUT, MESSAGES.buildHTMLOutputMenuItem(),
+	     new HTMLOutputAction()));
     buildItems.add(new DropDownItem(WIDGET_NAME_BUILD_BARCODE, MESSAGES.showBarcodeMenuItem(),
         new BarcodeAction()));
     buildItems.add(new DropDownItem(WIDGET_NAME_BUILD_DOWNLOAD, MESSAGES.downloadToComputerMenuItem(),
@@ -361,6 +364,33 @@ public class TopToolbar extends Composite {
     public void execute() {
       if (Ode.getInstance().okToConnect()) {
         replHardReset();
+      }
+    }
+  }
+  
+  public class HTMLOutputAction implements Command {
+
+ //filler to be replaced later
+   
+	 @Override
+    public void execute() {
+      ProjectRootNode projectRootNode = Ode.getInstance().getCurrentYoungAndroidProjectRootNode();
+      if (projectRootNode != null) {
+        String target = YoungAndroidProjectNode.YOUNG_ANDROID_TARGET_ANDROID;
+        ChainableCommand cmd = new SaveAllEditorsCommand(
+            new GenerateYailCommand(
+                new BuildCommand(target,
+                    new ShowProgressBarCommand(target,
+                        new WaitForBuildResultCommand(target,
+                            new ShowBarcodeCommand(target)), "BarcodeAction"))));
+//        updateBuildButton(true);
+        cmd.startExecuteChain(Tracking.PROJECT_ACTION_BUILD_BARCODE_YA, projectRootNode,
+            new Command() {
+              @Override
+              public void execute() {
+//                updateBuildButton(false);
+              }
+            });
       }
     }
   }
